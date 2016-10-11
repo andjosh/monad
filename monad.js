@@ -12,12 +12,12 @@
 // comes with three methods, lift, lift_value, and method, all of which can add
 // methods and properties to the monad's prototype.
 
-// A monad has a 'bind' method that takes a function that receives a value and
+// A monad has a 'pipe' method that takes a function that receives a value and
 // is usually expected to return a monad.
 
 //    var identity = MONAD();
 //    var monad = identity("Hello world.");
-//    monad.bind(alert);
+//    monad.pipe(alert);
 
 //    var ajax = MONAD()
 //        .lift('alert', alert);
@@ -27,7 +27,7 @@
 //    var maybe = MONAD(function (monad, value) {
 //        if (value === null || value === undefined) {
 //            monad.is_null = true;
-//            monad.bind = function () {
+//            monad.pipe = function () {
 //                return monad;
 //            };
 //            return null;
@@ -35,7 +35,7 @@
 //        return value;
 //    });
 //    var monad = maybe(null);
-//    monad.bind(alert);    // Nothing happens.
+//    monad.pipe(alert);    // Nothing happens.
 
 /*jslint this */
 
@@ -56,13 +56,13 @@ function MONAD(modifier) {
 
         var monad = Object.create(prototype);
 
-// In some mythologies 'bind' is called 'pipe' or '>>='.
-// The bind method will deliver the unit's value parameter to a function.
+// In some mythologies 'pipe' is called 'bind' or '>>='.
+// The pipe method will deliver the unit's value parameter to a function.
 
-        monad.bind = function (func, args) {
+        monad.pipe = function (func, args) {
 
-// bind takes a function and an optional array of arguments. It calls that
-// function passing the monad's value and bind's optional array of args.
+// pipe takes a function and an optional array of arguments. It calls that
+// function passing the monad's value and pipe's optional array of args.
 
 // With ES6, this horrible return statement can be replaced with
 
@@ -94,21 +94,21 @@ function MONAD(modifier) {
     };
     unit.lift_value = function (name, func) {
 
-// Add a method to the prototype that calls bind with the func. This can be
+// Add a method to the prototype that calls pipe with the func. This can be
 // used for ajax methods that return values other than monads.
 
         prototype[name] = function () {
-            return this.bind(func, arguments);
+            return this.pipe(func, arguments);
         };
         return unit;
     };
     unit.lift = function (name, func) {
 
-// Add a method to the prototype that calls bind with the func. If the value
+// Add a method to the prototype that calls pipe with the func. If the value
 // returned by the func is not a monad, then make a monad.
 
         prototype[name] = function () {
-            var result = this.bind(func, arguments);
+            var result = this.pipe(func, arguments);
             return (result && result.is_monad === true)
                 ? result
                 : unit(result);
